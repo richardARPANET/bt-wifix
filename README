@@ -1,0 +1,5 @@
+### BTWifix
+
+If you use BTWifi + Fon you'll find it kills your internet every hour or so and asks you to login again. Which is annoying.
+
+Set this python script to run every minute through cron and the problem goes away.
