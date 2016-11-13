@@ -1,16 +1,19 @@
 #!/usr/bin/python
 from urllib import urlencode
 import urllib2
-import gtk.gdk
-import dbus
-
+import time
+import argparse
 # change the these to your BT account email address
-BT_LOGIN = 'your@email.com'
-PASSWORD = 'password'
+BT_LOGIN = None
+PASSWORD = None
+SLEEP = 40
 
 
 def login():
+    print('Logging you into BTWifi...')
     url = 'https://www.btopenzone.com:8443/tbbLogon'
+    if BT_LOGIN is None or PASSWORD is None:
+        raise ValueError('You must specify your login email and password')
     data = {
         'username': BT_LOGIN,
         'password': PASSWORD
@@ -25,38 +28,25 @@ def login():
 
 
 def main():
-    # using google hosted small webpage to test
-    # our requests aren't being moved to BT
     try:
-        resp = urllib2.urlopen('http://www.google.com/iwanta404page')
-        notify('Logging you into BTWifi...')
-        login_resp = login()
-
-        if login_resp is False:
-            notify('Login failed')
+        # using google hosted small webpage to test
+        # our requests aren't being moved to BT
+        urllib2.urlopen('http://www.google.com/iwanta404page')
+        if login() is False:
+            print('Login failed')
     except (urllib2.HTTPError, urllib2.URLError):
         # Wifi should be working
         pass
 
 
-def notify(message):
-    item = 'org.freedesktop.Notifications'
-    path = '/org/freedesktop/Notifications'
-    interface = 'org.freedesktop.Notifications'
-    app_name = 'BTWifix'
-    id_num_to_replace = 0
-    icon = ''
-    title = 'BTWifix'
-    text = message
-    actions_list = ''
-    hint = ''
-    time = 2500
-
-    bus = dbus.SessionBus()
-    notif = bus.get_object(item, path)
-    notify = dbus.Interface(notif, interface)
-    notify.Notify(app_name, id_num_to_replace, icon, title, text, actions_list, hint, time)
-
-
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--email', help='Your BT login email')
+    parser.add_argument('--password', help='Your BT login password')
+    args = parser.parse_args()
+    BT_LOGIN = args.email
+    PASSWORD = args.password
+    while True:
+        main()
+        print('sleeping for {} seconds...'.format(SLEEP))
+        time.sleep(SLEEP)
